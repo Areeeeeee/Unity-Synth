@@ -10,67 +10,67 @@ public class Oscillator : MonoBehaviour
     public float _attack;
     public float _release;
 
-    public double _frequency; //frequency of the wave
-    private double _increment; //how much the phase of the wave progresses on x axis per audio sample
-    private double _phase; //phase or position along the wave form
-    private double _audioSampleRate; //audio samples per second
-    private float _gain;
+    public double _frequency; 
+    private double _increment; //how much the x axis moves per audio sample
+    private double _phase;
+    private double _audioSampleRate;
+    private float _gain; 
 
-    public float _octaveMultiplier = 1;
+    public float _octaveMultiplier = 1; //on awake octave set to middle C
 
     private float _volume = 0.1f;
 
     private float[] _frequencies; //array of all available tones
 
-    private int _currentWave; //sine = 0 tri = 1 square = 2
+    private int _currentWave; //sine = 0 tri = 1 square = 2 saw = 3
 
     void OnAudioFilterRead(float[] data, int channels) //is called when an audiosource tries to play sound, takes an array of data, which = the raw PCM data of the audio source's current output
     {
-        _increment = _frequency * 2.0 * Mathf.PI / _audioSampleRate; // increment per sample = 2PI*Hz/samples per sec
+        _increment = _frequency * 2.0 * Mathf.PI / _audioSampleRate; // movement along the x axis of the wave's function
 
-        for (int i = 0; i < data.Length; i += channels) //data[i] = current wave value by sample
+        for (int i = 0; i < data.Length; i += channels) //i = output y value along the wave's function
         {
-            _phase += _increment;
+            _phase += _increment; //finds what x value the wave's function is at
             if (_currentWave == 0) //is sine wave currently selected?
             {
-                data[i] = (float)(_gain * Mathf.Sin((float)_phase)); //wave value = Sine wave function * gain
+                data[i] = (float)(_gain * Mathf.Sin((float)_phase)); //y value = Sine wave function * gain
             }
 
             if (_currentWave == 1) //is triangle wave currently selected?
             {
-                data[i] = (float)(_gain * (double)Mathf.PingPong((float)_phase, 1.0f)); //wave value = PingPong(triangle) wave function * gain
+                data[i] = (float)(_gain * (double)Mathf.PingPong((float)_phase, 1.0f)); //y value = PingPong aka Triangle wave function * gain
             }
 
             if (_currentWave == 2) //is square wave currently selected?
             {
-                if (_gain * Mathf.Sin((float)_phase) >= 0 * _gain) //if wave value is greater than 0 along the Sine wave function...
+                if (_gain * Mathf.Sin((float)_phase) >= 0 * _gain) //if y value is greater than 0 along the Sine wave function...
                 {
-                    data[i] = (float)_gain * 0.5f; //wave value = max amplitude
+                    data[i] = (float)_gain * 0.5f; //y value = max amplitude
                 }
                 else
                 {
-                    data[i] = (-(float)_gain) * 0.5f; //otherwise, wave value = min amplitude
+                    data[i] = (-(float)_gain) * 0.5f; //otherwise, y value = min amplitude
                 }
             }
 
             if (_currentWave == 3) //is saw wave currently selected?
             {
-                if (_gain * Mathf.Sin((float)_phase) >= 0 * _gain) //if wave amplitude is greater than 0 along the Sine wave function...
+                if (_gain * Mathf.Sin((float)_phase) >= 0 * _gain) //if y value is greater than 0 along the Sine wave function...
                 {
-                    data[i] = (float)(_gain * (double)Mathf.PingPong((float)_phase, 1.0f)); //wave amplitude = Triangle wave function
+                    data[i] = (float)(_gain * (double)Mathf.PingPong((float)_phase, 1.0f)); //y value= Triangle wave function
                 }
                 else
                 {
-                    data[i] = (-(float)_gain) * 0.5f; //if not, wave amplitude = min amplitude
+                    data[i] = (-(float)_gain) * 0.5f; //if not, y value = min amplitude
                 }
             }
 
-            if (channels == 2)
+            if (channels == 2) //sends data to both speakers if audio is set to stereo
             {
                 data[i + 1] = data[i];
             }
 
-            if(_phase > (Mathf.PI * 2))
+            if(_phase > (Mathf.PI * 2)) // if phase > 2PI, phase is reset to 0
             {
                 _phase = 0.0;
             }
@@ -131,7 +131,7 @@ public class Oscillator : MonoBehaviour
             _octaveMultiplier = _octaveMultiplier * 2;
         }
 
-        //simple ADSR, only Attack & Release using unity mixer snapshots
+        //simple ADSR, only Attack & Release so far using unity mixer snapshots
         if (Input.GetKey("a") || Input.GetKey("w") || Input.GetKey("s") || Input.GetKey("e") || Input.GetKey("d") || Input.GetKey("f") || Input.GetKey("t") || Input.GetKey("g") || Input.GetKey("y") || Input.GetKey("h") || Input.GetKey("u") || Input.GetKey("j"))
         {
             _noteOn.TransitionTo(_attack);
