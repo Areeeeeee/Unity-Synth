@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -24,6 +25,8 @@ public class Oscillator : MonoBehaviour
     public float _release = .5f;
     public float _maxVolume = 1f;
     public float _minVolume = 0f;
+
+    System.Random _random = new System.Random();
 
     public static IEnumerator Attack(AudioSource _audioSource, float _attack, float _maxVolume, float _minVolume)
     {
@@ -100,12 +103,17 @@ public class Oscillator : MonoBehaviour
             {
                 if (_gain * Mathf.Sin((float)_phase) >= 0 * _gain) //if y value is greater than 0 along the Sine wave function...
                 {
-                    data[i] = (float)(_gain * (double)Mathf.PingPong((float)_phase, 1.0f)); //y value= Triangle wave function
+                    data[i] = (float)(_gain * Mathf.Lerp(0f, 1.0f, (float)_phase));  //y value= Triangle wave function
                 }
                 else
                 {
-                    data[i] = (-(float)_gain) * 0.5f; //if not, y value = min amplitude
+                    data[i] = (float)(_gain * Mathf.Lerp(0f, 1.0f, (float)_phase)); //if not, y value = min amplitude
                 }
+            }
+
+            if (_currentWave == 4) //is noise currently selected?
+            {
+                data[i] = (float)((_random.NextDouble() * 2) - 1) * _gain;
             }
 
             if (channels == 2) //sends data to both speakers if audio is set to stereo
@@ -166,6 +174,11 @@ public class Oscillator : MonoBehaviour
             _currentWave = 3;
         }
 
+        if (Input.GetKeyDown("5")) //saw wave selector
+        {
+            _currentWave = 4;
+        }
+
         if (Input.GetKeyDown("z")) //octave down
         {
             _octaveMultiplier = _octaveMultiplier / 2;
@@ -190,22 +203,34 @@ public class Oscillator : MonoBehaviour
         //attack length up
         if (Input.GetKeyDown("p"))
         {
-            _attack = _attack + 0.1f;
+            if (_attack < 5f)
+            {
+                _attack = _attack + 0.1f;
+            }
         }
         //attack length down
         if (Input.GetKeyDown("o"))
         {
-            _attack = _attack - 0.1f;
+            if (_attack > 0.1f)
+            {
+                _attack = _attack - 0.1f;
+            }
         }
         //release length up
         if (Input.GetKeyDown(";"))
         {
-            _release = _release + 0.1f;
+            if (_release < 5f)
+            {
+                _release = _release + 0.1f;
+            }
         }
         //release length down
         if (Input.GetKeyDown("l"))
         {
-            _release = _release - 0.1f;
+            if (_release > 0.1f)
+            {
+                _release = _release - 0.1f;
+            }
         }
 
         //keyboard keys
