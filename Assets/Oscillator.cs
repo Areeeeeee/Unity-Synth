@@ -187,6 +187,28 @@ public class Oscillator : MonoBehaviour
             StartCoroutine(Release(_audioSource, _release, _maxVolume, _minVolume));
         }
 
+        //attack length up
+        if (Input.GetKeyDown("p"))
+        {
+            _attack = _attack + 0.1f;
+        }
+        //attack length down
+        if (Input.GetKeyDown("o"))
+        {
+            _attack = _attack - 0.1f;
+        }
+        //release length up
+        if (Input.GetKeyDown(";"))
+        {
+            _release = _release + 0.1f;
+        }
+        //release length down
+        if (Input.GetKeyDown("l"))
+        {
+            _release = _release - 0.1f;
+        }
+
+        //keyboard keys
         if (Input.GetKeyDown("a")) //C
         {
             _frequency = _frequencies[0];
