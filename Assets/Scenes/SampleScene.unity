@@ -2538,12 +2538,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ce418432aa5a7246ace66594c363ae3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _noteOn: {fileID: 2553027735683942016, guid: 59e55f1f130dbf942b8ca28c01f326f5, type: 2}
-  _noteOff: {fileID: 682075147671492772, guid: 59e55f1f130dbf942b8ca28c01f326f5, type: 2}
-  _attack: 0
-  _release: 0.5
+  _volume: 0.1
   _frequency: 440
-  _octave: 1
+  _octaveMultiplier: 1
+  _audioSource: {fileID: 837738781}
+  _attack: 0.5
+  _release: 0.5
+  _maxVolume: 1
+  _minVolume: 0
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0

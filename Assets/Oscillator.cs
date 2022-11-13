@@ -1,28 +1,71 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Audio;
 
 public class Oscillator : MonoBehaviour
 {
-    public AudioMixerSnapshot _noteOn;
-    public AudioMixerSnapshot _noteOff;
-    public float _attack;
-    public float _release;
+    public float _volume = .1f;
+
 
     public double _frequency; 
     private double _increment; //how much the x axis moves per audio sample
     private double _phase;
     private double _audioSampleRate;
-    private float _gain; 
+    private float _gain;
 
     public float _octaveMultiplier = 1; //on awake octave set to middle C
-
-    private float _volume = 0.1f;
 
     private float[] _frequencies; //array of all available tones
 
     private int _currentWave; //sine = 0 tri = 1 square = 2 saw = 3
+
+    public AudioSource _audioSource;
+    public float _attack = .5f;
+    public float _release = .5f;
+    public float _maxVolume = 1f;
+    public float _minVolume = 0f;
+
+    public static IEnumerator Attack(AudioSource _audioSource, float _attack, float _maxVolume, float _minVolume)
+    {
+        float _currentTime = 0f;
+        float _currentVolume = _audioSource.volume;
+
+        while (Input.GetKey("a") || Input.GetKey("w") || Input.GetKey("s") || Input.GetKey("e") || Input.GetKey("d") || Input.GetKey("f") || Input.GetKey("t") || Input.GetKey("g") || Input.GetKey("y") || Input.GetKey("h") || Input.GetKey("u") || Input.GetKey("j"))
+        {
+            _currentTime += Time.deltaTime;
+            _audioSource.volume = Mathf.Lerp(_currentVolume, _maxVolume, _currentTime / _attack);
+
+            if (Input.GetKeyUp("a") || Input.GetKeyUp("w") || Input.GetKeyUp("s") || Input.GetKeyUp("e") || Input.GetKeyUp("d") || Input.GetKeyUp("f") || Input.GetKeyUp("t") || Input.GetKeyUp("g") || Input.GetKeyUp("y") || Input.GetKeyUp("h") || Input.GetKeyUp("u") || Input.GetKeyUp("j"))
+            {
+                yield break;
+            }
+
+            yield return null;
+        }
+
+        yield break;
+    }
+
+    public static IEnumerator Release(AudioSource _audioSource, float _release, float _maxVolume, float _minVolume)
+    {
+        float _currentTime = 0f;
+        float _currentVolume = _audioSource.volume;
+
+        while (_currentTime < _release)
+        {
+            _currentTime += Time.deltaTime;
+            _audioSource.volume = Mathf.Lerp(_currentVolume, _minVolume, _currentTime / _release);
+
+            if (Input.GetKeyDown("a") || Input.GetKeyDown("w") || Input.GetKeyDown("s") || Input.GetKeyDown("e") || Input.GetKeyDown("d") || Input.GetKeyDown("f") || Input.GetKeyDown("t") || Input.GetKeyDown("g") || Input.GetKeyDown("y") || Input.GetKeyDown("h") || Input.GetKeyDown("u") || Input.GetKeyDown("j"))
+            {
+                yield break;
+            }
+
+            yield return null;
+        }
+
+        yield break;
+    }
 
     void OnAudioFilterRead(float[] data, int channels) //is called when an audiosource tries to play sound, takes an array of data, which = the raw PCM data of the audio source's current output
     {
@@ -88,6 +131,8 @@ public class Oscillator : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        _gain = _volume;
+
         _frequencies[0] = 261.63f * _octaveMultiplier; //C4
         _frequencies[1] = 277.18f * _octaveMultiplier; //C#4
         _frequencies[2] = 293.66f * _octaveMultiplier; //D4
@@ -131,24 +176,21 @@ public class Oscillator : MonoBehaviour
             _octaveMultiplier = _octaveMultiplier * 2;
         }
 
-        //simple ADSR, only Attack & Release so far using unity mixer snapshots
+        //envelope
         if (Input.GetKey("a") || Input.GetKey("w") || Input.GetKey("s") || Input.GetKey("e") || Input.GetKey("d") || Input.GetKey("f") || Input.GetKey("t") || Input.GetKey("g") || Input.GetKey("y") || Input.GetKey("h") || Input.GetKey("u") || Input.GetKey("j"))
         {
-            _noteOn.TransitionTo(_attack);
+            StartCoroutine(Attack(_audioSource, _attack, _maxVolume, _minVolume));
         }
 
-        else
+        if (Input.GetKeyUp("a") || Input.GetKeyUp("w") || Input.GetKeyUp("s") || Input.GetKeyUp("e") || Input.GetKeyUp("d") || Input.GetKeyUp("f") || Input.GetKeyUp("t") || Input.GetKeyUp("g") || Input.GetKeyUp("y") || Input.GetKeyUp("h") || Input.GetKeyUp("u") || Input.GetKeyUp("j"))
         {
-            _noteOff.TransitionTo(_release);
+            StartCoroutine(Release(_audioSource, _release, _maxVolume, _minVolume));
         }
-
-        _gain = _volume;
 
         if (Input.GetKeyDown("a")) //C
         {
             _frequency = _frequencies[0];
         }
-
 
         if (Input.GetKeyDown("w")) //C#
         {
